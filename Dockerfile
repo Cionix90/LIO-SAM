@@ -21,16 +21,27 @@ RUN apt-get update \
     && apt install -y libgtsam-dev libgtsam-unstable-dev \
     && rm -rf /var/lib/apt/lists/*
 
-SHELL ["/bin/bash", "-c"]
 
-RUN mkdir -p ~/ros2_ws/src \
-    && cd ~/ros2_ws/src \
-    && git clone --branch ros2 https://github.com/TixiaoShan/LIO-SAM.git \
-    && cd .. \
-    && source /opt/ros/humble/setup.bash \
-    && colcon build
+# Create a new user
+ARG USERNAME=ros
+ARG USER_UID=1000
+ARG USER_GID=${USER_UID}
+RUN if id -u ${USER_UID} ; then userdel `id -un ${USER_UID}` ; fi
+RUN groupadd --gid ${USER_GID} ${USERNAME} 
+RUN useradd --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc \
-    && echo "source /root/ros2_ws/install/setup.bash" >> /root/.bashrc
+#Change HOME environment variable
+ENV HOME=/home/${USERNAME}
+# Choose to run as user
+ENV USER=${USERNAME}
 
-WORKDIR /root/ros2_ws
+USER ${USERNAME}
+
+ARG WORKSPACE=docker_navigation
+WORKDIR /home/ros/${WORKSPACE}
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
