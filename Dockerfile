@@ -7,14 +7,18 @@ RUN apt-get update \
     && apt install -y python3-colcon-common-extensions \
     && apt-get install -y ros-jazzy-navigation2 \
     && apt-get install -y ros-jazzy-robot-localization \
-    && apt-get install -y ros-jazzy-robot-state-publisher \
-    && apt install -y ros-jazzy-perception-pcl \
-  	&& apt install -y ros-jazzy-pcl-msgs \
-  	&& apt install -y ros-jazzy-vision-opencv \
-  	&& apt install -y ros-jazzy-xacro \
-      && apt install -y ros-jazzy-gtsam \
+    && apt-get install -y ros-jazzy-robot-state-publisher 
+RUN apt-get update \
+    &&  apt-get install -y libpcl-dev \
+    && apt-get install -y ros-jazzy-perception-pcl \
+  	&& apt-get install -y ros-jazzy-pcl-msgs \
+    && apt-get install -y ros-jazzy-pcl-ros \
+    && apt-get install -y ros-jazzy-pcl-conversions \
+  	&& apt-get install -y ros-jazzy-vision-opencv \
+  	&& apt-get install -y ros-jazzy-xacro \
+      && apt-get install -y ros-jazzy-gtsam \
     && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get upgrade -y
 # RUN apt-get update \
 #     && apt install -y software-properties-common \
 #     && add-apt-repository -y ppa:borglab/gtsam-release-4.1 \
@@ -44,5 +48,7 @@ USER ${USERNAME}
 
 ARG WORKSPACE=docker_navigation
 WORKDIR /home/ros/${WORKSPACE}
+
+RUN sudo ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
