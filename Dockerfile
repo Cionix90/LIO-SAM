@@ -18,7 +18,12 @@ RUN apt-get update \
   	&& apt-get install -y ros-jazzy-xacro \
       && apt-get install -y ros-jazzy-gtsam \
     && rm -rf /var/lib/apt/lists/*
-RUN apt-get upgrade -y
+RUN apt-get update \
+    && apt-get install -y ros-jazzy-rosbag2-storage-mcap \
+    && apt-get install -y ros-jazzy-plotjuggler-ros \
+    && apt-get install -y ros-jazzy-rmw-cyclonedds-cpp \
+    && apt-get clean
+RUN apt-get upgrade -y 
 # RUN apt-get update \
 #     && apt install -y software-properties-common \
 #     && add-apt-repository -y ppa:borglab/gtsam-release-4.1 \
@@ -48,6 +53,8 @@ USER ${USERNAME}
 
 ARG WORKSPACE=docker_navigation
 WORKDIR /home/ros/${WORKSPACE}
+
+RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 
 RUN sudo ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
 

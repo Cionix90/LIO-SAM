@@ -16,6 +16,8 @@
 #include <gtsam/nonlinear/ISAM2.h>
 #include <gtsam_unstable/nonlinear/IncrementalFixedLagSmoother.h>
 
+
+
 using gtsam::symbol_shorthand::X; // Pose3 (x,y,z,r,p,y)
 using gtsam::symbol_shorthand::V; // Vel   (xdot,ydot,zdot)
 using gtsam::symbol_shorthand::B; // Bias  (ax,ay,az,gx,gy,gz)
@@ -238,10 +240,16 @@ public:
             imuTopic, qos_imu,
             std::bind(&IMUPreintegration::imuHandler, this, std::placeholders::_1),
             imuOpt);
+        
         subOdometry = create_subscription<nav_msgs::msg::Odometry>(
             "lio_sam/mapping/odometry_incremental", qos,
             std::bind(&IMUPreintegration::odometryHandler, this, std::placeholders::_1),
             odomOpt);
+
+        // subOdometry = create_subscription<nav_msgs::msg::Odometry>(
+        //     "/model/mobile_robot/odometry", qos,
+        //     std::bind(&IMUPreintegration::odometryHandler, this, std::placeholders::_1),
+        //     odomOpt);
 
         pubImuOdometry = create_publisher<nav_msgs::msg::Odometry>(odomTopic+"_incremental", qos_imu);
 
@@ -492,15 +500,13 @@ public:
     void imuHandler(const sensor_msgs::msg::Imu::SharedPtr imu_raw)
     {
         std::lock_guard<std::mutex> lock(mtx);
-
+        
         sensor_msgs::msg::Imu thisImu = imuConverter(*imu_raw);
 
         imuQueOpt.push_back(thisImu);
         imuQueImu.push_back(thisImu);
-
         if (doneFirstOpt == false)
             return;
-
         double imuTime = stamp2Sec(thisImu.header.stamp);
         double dt = (lastImuT_imu < 0) ? (1.0 / 500.0) : (imuTime - lastImuT_imu);
         lastImuT_imu = imuTime;
