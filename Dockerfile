@@ -1,4 +1,5 @@
 FROM osrf/ros:humble-desktop-full-jammy
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y curl \
@@ -20,8 +21,9 @@ RUN apt-get update \
     && apt-get update \
     && apt install -y libgtsam-dev libgtsam-unstable-dev \
     && rm -rf /var/lib/apt/lists/*
-
-
+RUN apt-get update \
+    && apt install -y  ros-humble-rmw-cyclonedds-cpp 
+ENV DEBIAN_FRONTEND=dialog
 # Create a new user
 ARG USERNAME=ros
 ARG USER_UID=1000
@@ -43,5 +45,6 @@ USER ${USERNAME}
 
 ARG WORKSPACE=docker_navigation
 WORKDIR /home/ros/${WORKSPACE}
-
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN sudo ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
 ENTRYPOINT ["/ros_entrypoint.sh"]
